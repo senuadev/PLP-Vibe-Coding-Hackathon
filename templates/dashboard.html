@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-1">Total Balance</h6>
+                            <h2 class="mb-0">${{ "%.2f"|format(totals.income - totals.expense) }}</h2>
+                        </div>
+                        <i class="bi bi-wallet" style="font-size: 2.5rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-1">Income</h6>
+                            <h2 class="mb-0">+${{ "%.2f"|format(totals.income) }}</h2>
+                        </div>
+                        <i class="bi bi-arrow-down-circle" style="font-size: 2rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-1">Expenses</h6>
+                            <h2 class="mb-0">-${{ "%.2f"|format(totals.expense) }}</h2>
+                        </div>
+                        <i class="bi bi-arrow-up-circle" style="font-size: 2rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Quick Actions</h5>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('create_receipt') }}?transaction_type=income" class="btn btn-success">
+                                <i class="bi bi-plus-circle"></i> Add Income
+                            </a>
+                            <a href="{{ url_for('create_receipt') }}?transaction_type=expense" class="btn btn-danger">
+                                <i class="bi bi-dash-circle"></i> Add Expense
+                            </a>
+                            <a href="{{ url_for('voice_input') }}" class="btn btn-primary">
+                                <i class="bi bi-mic"></i> Voice Input
+                            </a>
+                            <a href="{{ url_for('image_input') }}" class="btn btn-info">
+                                <i class="bi bi-camera"></i> Image Input
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Transactions</h5>
+                    <a href="{{ url_for('view_receipts') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_transactions %}
+                        <div class="list-group list-group-flush">
+                            {% for transaction in recent_transactions %}
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            {% if transaction.transaction_type == 'income' %}
+                                                <div class="bg-success bg-opacity-10 p-2 rounded">
+                                                    <i class="bi bi-arrow-down-circle text-success"></i>
+                                                </div>
+                                            {% else %}
+                                                <div class="bg-danger bg-opacity-10 p-2 rounded">
+                                                    <i class="bi bi-arrow-up-circle text-danger"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">{{ transaction.description or 'No description' }}</h6>
+                                            <small class="text-muted">
+                                                {% if transaction.category %}
+                                                    {{ transaction.category.name }} • 
+                                                {% endif %}
+                                                {{ transaction.created_at.strftime('%b %d, %Y') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold {% if transaction.transaction_type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                            {% if transaction.transaction_type == 'expense' %}-{% endif %}${{ "%.2f"|format(transaction.amount) }}
+                                        </div>
+                                        <small class="text-muted">{{ transaction.transaction_type|title }}</small>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-receipt" style="font-size: 2rem;"></i>
+                                <p class="mt-2 mb-0">No transactions yet. Add your first transaction!</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Categories Summary -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Spending by Category</h5>
+                </div>
+                <div class="card-body">
+                    {% if categories_summary %}
+                        <div class="mb-4">
+                            {% for category in categories_summary %}
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="fw-medium">{{ category.name }}</span>
+                                    <span class="text-muted">${{ "%.2f"|format(category.total) }}</span>
+                                </div>
+                                {% set progress_class = 'success' if category.percentage < 30 else 'warning' if category.percentage < 70 else 'danger' %}
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-{{ progress_class }}" 
+                                         role="progressbar" 
+                                         style="width: {{ category.percentage }}%"
+                                         aria-valuenow="{{ category.percentage }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ "%.1f"|format(category.percentage) }}% of expenses</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <a href="#" class="btn btn-outline-primary w-100">View Full Report</a>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-tag" style="font-size: 2rem;"></i>
+                                <p class="mt-2 mb-0">No spending data available</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

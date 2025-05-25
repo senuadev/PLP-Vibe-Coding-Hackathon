@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Image Input - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Add Transaction from Receipt Image</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <button id="uploadButton" class="btn btn-primary btn-lg rounded-circle" style="width: 80px; height: 80px;">
+                            <i class="bi bi-camera" style="font-size: 2rem;"></i>
+                        </button>
+                        <p class="mt-2 text-muted">Click to upload a receipt image</p>
+                        <p class="small text-muted">Supported formats: JPG, PNG, GIF</p>
+                    </div>
+
+                    <div id="processingStatus" class="alert alert-info d-none">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span id="statusText">Processing your receipt image...</span>
+                        </div>
+                    </div>
+
+                    <div id="previewArea" class="d-none">
+                        <h5>Preview:</h5>
+                        <div class="mb-3">
+                            <img id="imagePreview" class="img-fluid rounded" style="max-height: 300px;">
+                        </div>
+                    </div>
+
+                    <div id="extractedData" class="d-none">
+                        <h5>Extracted Details:</h5>
+                        <div class="alert alert-light border mb-3">
+                            <p id="extractedText" class="mb-0"></p>
+                        </div>
+
+                        <form id="transactionForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Transaction Type</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="transaction_type" id="income" value="income" required>
+                                        <label class="form-check-label text-success" for="income">
+                                            <i class="bi bi-arrow-down-circle"></i> Income
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="transaction_type" id="expense" value="expense" required checked>
+                                        <label class="form-check-label text-danger" for="expense">
+                                            <i class="bi bi-arrow-up-circle"></i> Expense
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <input type="text" class="form-control" id="description" name="description" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="merchant" class="form-label">Merchant</label>
+                                <input type="text" class="form-control" id="merchant" name="merchant">
+                            </div>
+                            <div class="mb-3">
+                                <label for="transaction_date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="transaction_date" name="transaction_date">
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category (Optional)</label>
+                                <select class="form-select" id="category" name="category_id">
+                                    <option value="">Select a category</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" id="cancelBtn" class="btn btn-outline-secondary me-md-2">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Transaction</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Elements
+const uploadButton = document.getElementById('uploadButton');
+const processingStatus = document.getElementById('processingStatus');
+const statusText = document.getElementById('statusText');
+const previewArea = document.getElementById('previewArea');
+const imagePreview = document.getElementById('imagePreview');
+const extractedData = document.getElementById('extractedData');
+const extractedText = document.getElementById('extractedText');
+const transactionForm = document.getElementById('transactionForm');
+const cancelBtn = document.getElementById('cancelBtn');
+
+// File input
+const fileInput = document.createElement('input');
+fileInput.type = 'file';
+fileInput.accept = 'image/*';
+fileInput.style.display = 'none';
+uploadButton.appendChild(fileInput);
+
+// Handle file selection
+fileInput.addEventListener('change', handleFileSelect);
+
+// Upload button click handler
+uploadButton.addEventListener('click', () => fileInput.click());
+
+cancelBtn.addEventListener('click', resetUI);
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    
+    if (!file) {
+        return;
+    }
+    
+    // Check file size (max 16MB)
+    if (file.size > 16 * 1024 * 1024) {
+        alert('File size is too large. Maximum allowed size is 16MB.');
+        resetUI();
+        return;
+    }
+    
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        previewArea.classList.remove('d-none');
+    };
+    reader.readAsDataURL(file);
+    
+    // Process the image
+    processImage(file);
+}
+
+async function processImage(file) {
+    processingStatus.classList.remove('d-none');
+    extractedData.classList.add('d-none');
+    
+    try {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const response = await fetch('/process_image', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Update form with extracted data
+            document.getElementById('amount').value = result.transaction.amount || '';
+            document.getElementById('description').value = result.transaction.description || '';
+            
+            if (result.transaction.transaction_type === 'income') {
+                document.getElementById('income').checked = true;
+            } else {
+                document.getElementById('expense').checked = true;
+            }
+            
+            if (result.transaction.merchant) {
+                document.getElementById('merchant').value = result.transaction.merchant;
+            }
+            
+            if (result.transaction.transaction_date) {
+                document.getElementById('transaction_date').value = result.transaction.transaction_date;
+            }
+            
+            // Try to match category if available
+            if (result.transaction.category) {
+                const categorySelect = document.getElementById('category');
+                for (let i = 0; i < categorySelect.options.length; i++) {
+                    if (categorySelect.options[i].text.toLowerCase() === result.transaction.category.toLowerCase()) {
+                        categorySelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            
+            extractedText.textContent = result.transaction.description || 'No details extracted';
+            extractedData.classList.remove('d-none');
+        } else {
+            alert('Error: ' + (result.error || 'Could not process image'));
+            resetUI();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error processing your receipt. Please try again.');
+        resetUI();
+    }
+}
+
+// Handle form submission
+transactionForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+        amount: document.getElementById('amount').value,
+        transaction_type: document.querySelector('input[name="transaction_type"]:checked').value,
+        description: document.getElementById('description').value,
+        merchant: document.getElementById('merchant').value,
+        transaction_date: document.getElementById('transaction_date').value || null,
+        category_id: document.getElementById('category').value || null
+    };
+    
+    try {
+        const response = await fetch('/save_transaction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            window.location.href = '{{ url_for("view_receipts") }}';
+        } else {
+            alert('Error saving transaction: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error saving transaction. Please try again.');
+    }
+});
+
+// Reset UI to initial state
+function resetUI() {
+    fileInput.value = '';
+    previewArea.classList.add('d-none');
+    extractedData.classList.add('d-none');
+    processingStatus.classList.add('d-none');
+    statusText.textContent = 'Processing your receipt image...';
+    
+    // Reset form
+    transactionForm.reset();
+}
+</script>
+{% endblock %}

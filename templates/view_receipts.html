@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}My Receipts{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Transactions</h1>
+        <a href="{{ url_for('create_receipt') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add New
+        </a>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-0">Transaction History</h5>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('view_receipts', filter='all') }}" class="btn btn-outline-secondary btn-sm">All</a>
+                        <a href="{{ url_for('view_receipts', filter='income') }}" class="btn btn-outline-success btn-sm">Income</a>
+                        <a href="{{ url_for('view_receipts', filter='expense') }}" class="btn btn-outline-danger btn-sm">Expenses</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if receipts.items %}
+                            {% for receipt in receipts.items %}
+                            <tr>
+                                <td>{{ receipt.created_at.strftime('%b %d, %Y') }}</td>
+                                <td>
+                                    {{ receipt.description or 'No description' }}
+                                </td>
+                                <td>
+                                    {% if receipt.category %}
+                                        <span class="badge bg-secondary">{{ receipt.category.name }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Uncategorized</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end {% if receipt.transaction_type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                    {% if receipt.transaction_type == 'expense' %}-{% endif %}${{ '%.2f'|format(receipt.amount) }}
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-outline-danger" title="Delete" 
+                                           onclick="return confirm('Are you sure you want to delete this transaction?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="bi bi-receipt" style="font-size: 2rem;"></i>
+                                        <p class="mt-2 mb-0">No transactions found. Add your first transaction!</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        {% if receipts.pages > 1 %}
+        <div class="card-footer">
+            <nav aria-label="Receipts pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if receipts.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('view_receipts', page=receipts.prev_num) }}">Previous</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in receipts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if receipts.page == page_num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('view_receipts', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if receipts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('view_receipts', page=receipts.next_num) }}">Next</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted mb-2">Total Income</h6>
+                    <h3 class="text-success mb-0">${{ '%.2f'|format(totals.income|default(0)) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted mb-2">Total Expenses</h6>
+                    <h3 class="text-danger mb-0">${{ '%.2f'|format(totals.expense|default(0)) }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    .badge {
+        font-weight: 500;
+        padding: 0.35em 0.65em;
+    }
+    .pagination {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}

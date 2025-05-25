@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to the Flask App</h1>
+    <p class="lead">A simple Flask application with SQLAlchemy and authentication.</p>
+    <hr class="my-4">
+    {% if current_user.is_authenticated %}
+        <p>You are logged in as {{ current_user.username }}.</p>
+        <a class="btn btn-primary btn-lg" href="{{ url_for('dashboard') }}" role="button">Go to Dashboard</a>
+    {% else %}
+        <p>Please log in or register to access the dashboard.</p>
+        <div class="d-grid gap-2 d-md-block">
+            <a class="btn btn-primary btn-lg me-md-2" href="{{ url_for('login') }}" role="button">Login</a>
+            <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('register') }}" role="button">Register</a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <h3>Feature 1</h3>
+        <p>User authentication and authorization with Flask-Login.</p>
+    </div>
+    <div class="col-md-4">
+        <h3>Feature 2</h3>
+        <p>SQLite database with SQLAlchemy ORM.</p>
+    </div>
+    <div class="col-md-4">
+        <h3>Feature 3</h3>
+        <p>Responsive design with Bootstrap 5.</p>
+    </div>
+</div>
+{% endblock %}

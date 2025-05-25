@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Voice Input - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Add Transaction by Voice</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <button id="startRecording" class="btn btn-primary btn-lg rounded-circle" style="width: 80px; height: 80px;">
+                            <i class="bi bi-mic" style="font-size: 2rem;"></i>
+                        </button>
+                        <p class="mt-2 text-muted">Click and speak naturally about your transaction</p>
+                        <p class="small text-muted">Example: "I spent 25 dollars on lunch today" or "Received 500 for freelance work"</p>
+                    </div>
+
+                    <div id="recordingStatus" class="alert alert-info d-none">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span id="statusText">Processing your voice input...</span>
+                        </div>
+                    </div>
+
+                    <div id="transcriptionResult" class="d-none">
+                        <h5>We heard:</h5>
+                        <div class="alert alert-light border mb-3">
+                            <p id="transcribedText" class="mb-0"></p>
+                        </div>
+
+                        <form id="transactionForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Transaction Type</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="transaction_type" id="income" value="income" required>
+                                        <label class="form-check-label text-success" for="income">
+                                            <i class="bi bi-arrow-down-circle"></i> Income
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="transaction_type" id="expense" value="expense" required checked>
+                                        <label class="form-check-label text-danger" for="expense">
+                                            <i class="bi bi-arrow-up-circle"></i> Expense
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <input type="text" class="form-control" id="description" name="description" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transaction_date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="transaction_date" name="transaction_date">
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category (Optional)</label>
+                                <select class="form-select" id="category" name="category_id">
+                                    <option value="">Select a category</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" id="cancelBtn" class="btn btn-outline-secondary me-md-2">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Transaction</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let mediaRecorder;
+let audioChunks = [];
+
+// Elements
+const startButton = document.getElementById('startRecording');
+const recordingStatus = document.getElementById('recordingStatus');
+const statusText = document.getElementById('statusText');
+const transcriptionResult = document.getElementById('transcriptionResult');
+const transcribedText = document.getElementById('transcribedText');
+const transactionForm = document.getElementById('transactionForm');
+const cancelBtn = document.getElementById('cancelBtn');
+
+// Start recording
+startButton.addEventListener('click', async () => {
+    try {
+        // Reset UI
+        startButton.disabled = true;
+        startButton.innerHTML = '<i class="bi bi-record-circle"></i> Listening...';
+        startButton.classList.remove('btn-primary');
+        startButton.classList.add('btn-danger');
+        recordingStatus.classList.remove('d-none');
+        transcriptionResult.classList.add('d-none');
+        
+        // Request microphone access
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        
+        // Collect audio data
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        // When recording stops
+        mediaRecorder.onstop = async () => {
+            statusText.textContent = 'Processing your voice...';
+            
+            // Create audio file
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.wav');
+            
+            try {
+                // Send to server for processing
+                const response = await fetch('/process_audio', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update form with recognized data
+                    document.getElementById('amount').value = result.transaction.amount || '';
+                    document.getElementById('description').value = result.transaction.description || '';
+                    
+                    if (result.transaction.transaction_type === 'income') {
+                        document.getElementById('income').checked = true;
+                    } else {
+                        document.getElementById('expense').checked = true;
+                    }
+                    
+                    if (result.transaction.transaction_date) {
+                        document.getElementById('transaction_date').value = result.transaction.transaction_date;
+                    }
+                    
+                    // Try to match category if available
+                    if (result.transaction.category) {
+                        const categorySelect = document.getElementById('category');
+                        for (let i = 0; i < categorySelect.options.length; i++) {
+                            if (categorySelect.options[i].text.toLowerCase() === result.transaction.category.toLowerCase()) {
+                                categorySelect.selectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    transcribedText.textContent = result.transaction.description || 'No transcription available';
+                    transcriptionResult.classList.remove('d-none');
+                } else {
+                    alert('Error: ' + (result.error || 'Could not process voice input'));
+                    resetUI();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error processing your voice input. Please try again.');
+                resetUI();
+            } finally {
+                // Stop all tracks in the stream
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
+        
+        // Start recording
+        mediaRecorder.start();
+        
+        // Stop recording after 10 seconds
+        setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+        }, 10000);
+        
+    } catch (error) {
+        console.error('Error accessing microphone:', error);
+        alert('Could not access your microphone. Please ensure you have granted microphone permissions.');
+        resetUI();
+    }
+});
+
+// Handle form submission
+transactionForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+        amount: document.getElementById('amount').value,
+        transaction_type: document.querySelector('input[name="transaction_type"]:checked').value,
+        description: document.getElementById('description').value,
+        transaction_date: document.getElementById('transaction_date').value || null,
+        category_id: document.getElementById('category').value || null
+    };
+    
+    try {
+        const response = await fetch('/save_transaction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            window.location.href = '{{ url_for("view_receipts") }}';
+        } else {
+            alert('Error saving transaction: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error saving transaction. Please try again.');
+    }
+});
+
+// Handle cancel button
+cancelBtn.addEventListener('click', () => {
+    resetUI();});
+
+// Reset UI to initial state
+function resetUI() {
+    startButton.disabled = false;
+    startButton.innerHTML = '<i class="bi bi-mic" style="font-size: 2rem;"></i>';
+    startButton.classList.remove('btn-danger');
+    startButton.classList.add('btn-primary');
+    recordingStatus.classList.add('d-none');
+    transcriptionResult.classList.add('d-none');
+    
+    // Stop any active recording
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+    }
+}
+</script>
+{% endblock %}

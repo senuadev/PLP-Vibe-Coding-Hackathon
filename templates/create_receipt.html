@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Receipt{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Add New Transaction</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_receipt') }}">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="amount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" min="0.01" class="form-control" id="amount" name="amount" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Transaction Type</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="transaction_type" id="income" 
+                                    value="income" required
+                                    {% if transaction_type == 'income' %}checked{% endif %}>
+                                <label class="form-check-label text-success" for="income">
+                                    <i class="bi bi-arrow-down-circle"></i> Income
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="transaction_type" id="expense" 
+                                    value="expense" required
+                                    {% if not transaction_type or transaction_type == 'expense' %}checked{% endif %}>
+                                <label class="form-check-label text-danger" for="expense">
+                                    <i class="bi bi-arrow-up-circle"></i> Expense
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label">Category (optional)</label>
+                        <select class="form-select" id="category_id" name="category_id">
+                            <option value="">-- Select a category --</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (optional)</label>
+                        <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('view_receipts') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Transaction</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Client-side validation and enhancements
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const amountInput = document.getElementById('amount');
+        
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+        
+        // Auto-format amount input
+        amountInput.addEventListener('blur', function() {
+            const value = parseFloat(amountInput.value);
+            if (!isNaN(value)) {
+                amountInput.value = value.toFixed(2);
+            }
+        });
+    });
+</script>
+{% endblock %}
