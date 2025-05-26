@@ -1,37 +1,267 @@
 {% extends "base.html" %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Create Account - ProfitFlow{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="text-center">Create an Account</h2>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('register') }}">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="row g-0">
+                    <!-- Left Side - Form -->
+                    <div class="col-lg-7 p-4 p-md-5">
+                        <div class="text-center mb-4">
+                            <h2 class="fw-bold text-primary mb-1">Create Your Account</h2>
+                            <p class="text-muted">Join thousands of users managing their finances with ProfitFlow</p>
+                        </div>
+                        
+                        <form method="POST" action="{{ url_for('register') }}" class="needs-validation" novalidate>
+                            <div class="row g-3">
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label fw-medium">
+                                        <i class="fas fa-user me-2"></i>Username
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-user text-muted"></i>
+                                        </span>
+                                        <input type="text" class="form-control" 
+                                               id="username" name="username" 
+                                               placeholder="Choose a username" required>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Please choose a username
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label fw-medium">
+                                        <i class="fas fa-envelope me-2"></i>Email Address
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-at text-muted"></i>
+                                        </span>
+                                        <input type="email" class="form-control" 
+                                               id="email" name="email" 
+                                               placeholder="your@email.com" required>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Please provide a valid email address
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label fw-medium">
+                                    <i class="fas fa-lock me-2"></i>Password
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-key text-muted"></i>
+                                    </span>
+                                    <input type="password" class="form-control" 
+                                           id="password" name="password" 
+                                           placeholder="Create a strong password" required
+                                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}">
+                                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    <small>Must be at least 8 characters with uppercase, lowercase, and numbers</small>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Password must be at least 8 characters long and include uppercase, lowercase, and numbers
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label small" for="terms">
+                                    I agree to the <a href="#" class="text-primary">Terms of Service</a> and 
+                                    <a href="#" class="text-primary">Privacy Policy</a>
+                                </label>
+                                <div class="invalid-feedback">
+                                    You must agree to the terms and conditions
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                    <i class="fas fa-user-plus me-2"></i>Create Account
+                                </button>
+                            </div>
+                            
+                            <div class="text-center position-relative my-4">
+                                <hr class="my-0">
+                                <span class="px-3 bg-white position-absolute top-50 start-50 translate-middle text-muted small">
+                                    OR SIGN UP WITH
+                                </span>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-6">
+                                    <a href="#" class="btn btn-outline-primary w-100">
+                                        <i class="fab fa-google me-2"></i>Google
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="#" class="btn btn-outline-primary w-100">
+                                        <i class="fab fa-microsoft me-2"></i>Microsoft
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p class="mb-0">
+                                Already have an account? 
+                                <a href="{{ url_for('login') }}" class="text-primary fw-medium text-decoration-none">
+                                    Sign in
+                                </a>
+                            </p>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                    
+                    <!-- Right Side - Benefits -->
+                    <div class="col-lg-5 bg-primary text-white p-4 p-md-5 d-none d-lg-flex flex-column justify-content-center">
+                        <h3 class="fw-bold mb-4">Why join ProfitFlow?</h3>
+                        
+                        <div class="d-flex mb-4">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="bg-white bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Track Expenses</h5>
+                                <p class="small opacity-75 mb-0">Monitor your spending and income in one place</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex mb-4">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="bg-white bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-bullseye"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Set Budgets</h5>
+                                <p class="small opacity-75 mb-0">Create and manage budgets for your financial goals</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="bg-white bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Smart Receipts</h5>
+                                <p class="small opacity-75 mb-0">Scan and organize receipts with AI-powered technology</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Register</button>
-                    </div>
-                </form>
-                <div class="mt-3 text-center">
-                    <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const passwordInput = this.previousElementSibling;
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+            
+            // Play click sound
+            playSound('clickSound');
+        });
+    });
+    
+    // Form validation
+    (function() {
+        'use strict';
+        
+        const forms = document.querySelectorAll('.needs-validation');
+        const passwordInput = document.getElementById('password');
+        
+        // Password strength indicator
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                const strengthMeter = document.createElement('div');
+                strengthMeter.className = 'password-strength mt-2';
+                
+                // Remove previous strength meter if it exists
+                const existingMeter = this.parentNode.querySelector('.password-strength');
+                if (existingMeter) {
+                    existingMeter.remove();
+                }
+                
+                // Calculate password strength
+                let strength = 0;
+                if (password.length >= 8) strength++;
+                if (password.match(/[a-z]+/)) strength++;
+                if (password.match(/[A-Z]+/)) strength++;
+                if (password.match(/[0-9]+/)) strength++;
+                if (password.match(/[!@#$%^&*(),.?":{}|<>]+/)) strength++;
+                
+                // Create strength meter
+                const strengthText = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'][Math.min(strength, 5)];
+                const strengthClass = ['bg-danger', 'bg-warning', 'bg-info', 'bg-primary', 'bg-success', 'bg-success'][Math.min(strength, 5)];
+                
+                strengthMeter.innerHTML = `
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar ${strengthClass}" role="progressbar" 
+                             style="width: ${(strength / 5) * 100}%;" 
+                             aria-valuenow="${(strength / 5) * 100}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-muted">Password strength: <span class="fw-medium">${strengthText}</span></small>
+                `;
+                
+                this.parentNode.appendChild(strengthMeter);
+            });
+        }
+        
+        // Form submission
+        Array.prototype.slice.call(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    playSound('errorSound');
+                } else {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating Account...';
+                    }
+                    playSound('successSound');
+                }
+                
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
 {% endblock %}

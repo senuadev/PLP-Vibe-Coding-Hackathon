@@ -1,36 +1,194 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Home - ProfitFlow{% endblock %}
 
 {% block content %}
-<div class="jumbotron">
-    <h1 class="display-4">Welcome to the Flask App</h1>
-    <p class="lead">A simple Flask application with SQLAlchemy and authentication.</p>
-    <hr class="my-4">
-    {% if current_user.is_authenticated %}
-        <p>You are logged in as {{ current_user.username }}.</p>
-        <a class="btn btn-primary btn-lg" href="{{ url_for('dashboard') }}" role="button">Go to Dashboard</a>
-    {% else %}
-        <p>Please log in or register to access the dashboard.</p>
-        <div class="d-grid gap-2 d-md-block">
-            <a class="btn btn-primary btn-lg me-md-2" href="{{ url_for('login') }}" role="button">Login</a>
-            <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('register') }}" role="button">Register</a>
+<!-- Hero Section -->
+<section class="hero-section py-5 my-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h1 class="display-4 fw-bold mb-4">Take Control of Your <span class="text-primary">Finances</span> with Ease</h1>
+                <p class="lead mb-4">Track your expenses, manage your budget, and achieve your financial goals with our intuitive money management platform.</p>
+                
+                {% if current_user.is_authenticated %}
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                        </a>
+                        <a href="{{ url_for('create_receipt') }}" class="btn btn-outline-primary btn-lg px-4">
+                            <i class="fas fa-plus-circle me-2"></i>Add Transaction
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-user-plus me-2"></i>Get Started Free
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg px-4">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-6">
+                <div class="position-relative">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Finance Analytics" class="img-fluid rounded-4 shadow">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-primary bg-opacity-10 rounded-4"></div>
+                </div>
+            </div>
         </div>
-    {% endif %}
-</div>
+    </div>
+</section>
 
-<div class="row mt-5">
-    <div class="col-md-4">
-        <h3>Feature 1</h3>
-        <p>User authentication and authorization with Flask-Login.</p>
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Powerful Features for <span class="text-primary">Your Finances</span></h2>
+            <p class="lead text-muted">Everything you need to manage your money effectively</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 hover-lift">
+                    <div class="card-body p-4">
+                        <div class="icon-lg bg-primary bg-opacity-10 text-primary rounded-3 mb-4">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <h4 class="mb-3">Expense Tracking</h4>
+                        <p class="text-muted mb-0">Easily track all your expenses and income in one place with our intuitive interface.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 hover-lift">
+                    <div class="card-body p-4">
+                        <div class="icon-lg bg-success bg-opacity-10 text-success rounded-3 mb-4">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4 class="mb-3">Budget Planning</h4>
+                        <p class="text-muted mb-0">Set budgets and get insights into your spending habits to save more money.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 hover-lift">
+                    <div class="card-body p-4">
+                        <div class="icon-lg bg-warning bg-opacity-10 text-warning rounded-3 mb-4">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <h4 class="mb-3">Receipt Scanning</h4>
+                        <p class="text-muted mb-0">Snap a photo of your receipts and let our AI extract all the details automatically.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-4">
-        <h3>Feature 2</h3>
-        <p>SQLite database with SQLAlchemy ORM.</p>
+</section>
+
+<!-- How It Works -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">How It <span class="text-primary">Works</span></h2>
+            <p class="lead text-muted">Get started in minutes with our simple 3-step process</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="icon-xl bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <span class="display-6 fw-bold">1</span>
+                    </div>
+                    <h4>Sign Up</h4>
+                    <p class="text-muted">Create your free account in under a minute</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="icon-xl bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <span class="display-6 fw-bold">2</span>
+                    </div>
+                    <h4>Add Transactions</h4>
+                    <p class="text-muted">Manually enter or scan your receipts</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="icon-xl bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <span class="display-6 fw-bold">3</span>
+                    </div>
+                    <h4>Track & Analyze</h4>
+                    <p class="text-muted">Gain insights into your spending habits</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-4">
-        <h3>Feature 3</h3>
-        <p>Responsive design with Bootstrap 5.</p>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center py-4">
+        <h2 class="fw-bold mb-4">Ready to take control of your finances?</h2>
+        <p class="lead mb-4">Join thousands of users who are already managing their money better with ProfitFlow.</p>
+        <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-5">
+            <i class="fas fa-rocket me-2"></i>Get Started Free
+        </a>
     </div>
-</div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+    
+    .icon-lg {
+        width: 60px;
+        height: 60px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .icon-xl {
+        width: 80px;
+        height: 80px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+    }
+    
+    .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+    }
+    
+    .text-gradient {
+        background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+</style>
 {% endblock %}
