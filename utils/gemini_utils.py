@@ -235,8 +235,4 @@ def test_audio_processing():
 
 if __name__ == '__main__':
     test_audio_processing()
-    # genai.configure(api_key="AIzaSyAqMexiYlJh7pNl5rgSTWUiNUGsVKIbqkQ")
-    # models = genai.list_models()
-    # for model in models:
-    #     print(model.name)
     

@@ -78,7 +78,8 @@ class Receipt(db.Model):
 
 def create_app(config_class=Config):
     # Load environment variables
-    load_dotenv("secrets.env")
+
+    load_dotenv("secrets.env") if os.path.exists("secrets.env") else load_dotenv()
 
     # Initialize Gemini
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
@@ -196,7 +197,7 @@ def create_app(config_class=Config):
     # Simple routes
     @app.route('/')
     def index():
-        return render_template('index.html')
+        return render_template('index.html', now=datetime.now())
 
     @app.route('/dashboard')
     @login_required
@@ -250,7 +251,8 @@ def create_app(config_class=Config):
             'dashboard.html',
             totals=totals,
             recent_transactions=recent_transactions,
-            categories_summary=categories_summary
+            categories_summary=categories_summary,
+            now=datetime.now()
         )
         
     @app.route('/receipts')
@@ -292,7 +294,8 @@ def create_app(config_class=Config):
         return render_template('view_receipts.html', 
                              receipts=receipts, 
                              totals=totals,
-                             current_filter=filter_type)
+                             current_filter=filter_type,
+                             now=datetime.now())
         
     @app.route('/receipts/create', methods=['GET', 'POST'])
     @login_required
@@ -350,7 +353,8 @@ def create_app(config_class=Config):
         return render_template(
             'create_receipt.html', 
             categories=categories,
-            transaction_type=transaction_type
+            transaction_type=transaction_type,
+            now=datetime.now()
         )
     
     @app.route('/voice_input')
@@ -358,14 +362,14 @@ def create_app(config_class=Config):
     def voice_input():
         # Get user's categories for the form
         categories = Category.query.filter_by(user_id=current_user.id).all()
-        return render_template('voice_input.html', categories=categories)
+        return render_template('voice_input.html', categories=categories, now=datetime.now())
 
     @app.route('/image_input')
     @login_required
     def image_input():
         # Get user's categories for the form
         categories = Category.query.filter_by(user_id=current_user.id).all()
-        return render_template('image_input.html', categories=categories)
+        return render_template('image_input.html', categories=categories, now=datetime.now())
         
     @app.route('/process_image', methods=['POST'])
     @login_required
