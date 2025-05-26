@@ -163,7 +163,7 @@ def create_app(config_class=Config):
             flash('Registration successful! Please log in.', 'success')
             return redirect(url_for('login'))
             
-        return render_template('register.html')
+        return render_template('register.html', now=datetime.now())
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -186,7 +186,7 @@ def create_app(config_class=Config):
                 
             flash('Invalid username/email or password', 'danger')
             
-        return render_template('login.html')
+        return render_template('login.html', now=datetime.now())
 
     @app.route('/logout')
     @login_required
