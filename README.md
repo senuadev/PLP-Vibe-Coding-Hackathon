@@ -6,6 +6,11 @@ ProfitFlow is a lightweight, intuitive, and intelligent web application designed
 
 No more pen-and-paper ledgers or complex spreadsheets! ProfitFlow makes financial management accessible, accurate, and actionable for the everyday trader.
 
+## Used Prompts
+The Final Prompts are in the file `Final Prompts for the ProfitFlow Project.docx`.
+
+Online Link: [Final Prompts for the ProfitFlow Project](https://docs.google.com/document/d/1U5DIFrveZfylmn_c9Hbdn-BRDvG3Qmw0aa-9vlMaSCU/edit?usp=sharing)
+
 ## 🔗 Important Links
 
 * **Live Prototype:** [ProfitFlow](https://profitflow.unicodeonesolutions.com/)
